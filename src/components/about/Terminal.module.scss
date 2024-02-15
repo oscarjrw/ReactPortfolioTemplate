@@ -42,3 +42,15 @@ i {
     color: #00a47f;
   }
 }
+
+.Box {
+  background-color: $white;
+  color: $white;
+  transition: all 400ms;
+}
+
+.light {
+  background-color: $dark;
+  color: $white;
+  transition: all 400ms;
+}

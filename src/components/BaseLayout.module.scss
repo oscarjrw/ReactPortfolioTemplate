@@ -1,5 +1,9 @@
 @import "../variables.modules";
 
+body {
+  font-family: 'Lato Thin', monospace;
+}
+
 footer {
   color: $dark;
 }
@@ -28,6 +32,15 @@ footer {
   color: $dark;
   transition: all 400ms;
 }
+
+.cursor {
+  visibility: visible;
+}
+
+.cursor.hidden {
+  visibility: hidden;
+}
+
 
 
 //.dark {

@@ -19,3 +19,28 @@
     line-height: 1.75;
   }
 }
+
+/* styles.css */
+@keyframes loadAnimation {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.skill-bar {
+  height: 20px;
+  background-color: #ddd;
+  margin-bottom: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress {
+  height: 100%;
+  width: 0;
+  background-color: #4caf50;
+  animation: loadAnimation 1s ease-in-out;
+}

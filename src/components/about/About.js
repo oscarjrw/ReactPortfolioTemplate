@@ -1,19 +1,51 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import Style from './About.module.scss';
 import Terminal from "./Terminal";
 import {Box} from "@mui/material";
 import {info} from "../../info/Info";
 
+// @mui material components
+import Container from "@mui/material/Container";
+import Grid from "@mui/material/Grid";
+import Stack from "@mui/material/Stack";
+import {LinearProgress} from "@mui/material";
+import Typography from '@mui/material/Typography';
+
 
 export default function About() {
     const firstName = info.firstName.toLowerCase()
 
+    const SkillProgressBar = ({skill, percentage}) => {
+        const [progress, setProgress] = useState(0);
+
+        useEffect(() => {
+            const interval = setInterval(() => {
+                setProgress((prevProgress) => {
+                    if (prevProgress >= percentage) {
+                        clearInterval(interval);
+                    }
+                    return prevProgress + 1;
+                });
+            }, 20); // Vous pouvez ajuster la vitesse de la barre de progression ici
+
+            return () => {
+                clearInterval(interval);
+            };
+        }, [percentage]);
+
+        return (
+            <Box my={2}>
+                <Typography variant="subtitle1" gutterBottom>
+                    {skill} - {percentage}%
+                </Typography>
+                <LinearProgress variant="determinate" value={progress}/>
+            </Box>
+        );
+    };
+
     function aboutMeText() {
         return <>
-            <p><span style={{color: info.baseColor}}>{firstName}{info.lastName.toLowerCase()} $</span> cat
-                about{firstName} </p>
-            <p><span style={{color: info.baseColor}}>about{firstName} <span
-                className={Style.green}>(main)</span> $ </span>
+            <p>
                 {info.bio}
             </p>
         </>;
@@ -21,40 +53,100 @@ export default function About() {
 
     function skillsText() {
         return <>
-            <p><span style={{color: info.baseColor}}>{firstName}{info.lastName.toLowerCase()} $</span> cd skills/tools
-            </p>
-            <p><span style={{color: info.baseColor}}>skills/tools <span
-                className={Style.green}>(main)</span> $</span> ls</p>
-            <p style={{color: info.baseColor}}> Proficient With</p>
-            <ul className={Style.skills}>
-                {info.skills.proficientWith.map((proficiency, index) => <li key={index}>{proficiency}</li>)}
-            </ul>
-            <p style={{color: info.baseColor}}> Exposed To</p>
-            <ul className={Style.skills}>
-                {info.skills.exposedTo.map((skill, index) => <li key={index}>{skill}</li>)}
-            </ul>
+            <Box component="section" bgColor="white" py={4}>
+                <Container>
+                    <Grid container spacing={4}>
+                        <Grid item xs={12} md={6}>
+                            <Typography variant="h5" mb={2}>
+                                Proficient With
+                            </Typography>
+                            {info.skills.proficientWith.map((skill, index) => (
+                                <SkillProgressBar key={index} skill={skill.skill} percentage={skill.percentage}/>
+                            ))}
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                            <Typography variant="h5" mb={2}>
+                                Exposed To
+                            </Typography>
+                            {info.skills.exposedTo.map((skill, index) => (
+                                <SkillProgressBar key={index} skill={skill.skill} percentage={skill.percentage}/>
+                            ))}
+                        </Grid>
+                    </Grid>
+                </Container>
+            </Box>
         </>;
     }
 
     function miscText() {
         return <>
-            <p><span style={{color: info.baseColor}}>{firstName}{info.lastName.toLowerCase()} $</span> cd
-                hobbies/interests</p>
-            <p><span style={{color: info.baseColor}}>hobbies/interests <span
-                className={Style.green}>(main)</span> $</span> ls</p>
-            <ul>
-                {info.hobbies.map((hobby, index) => (
-                    <li key={index}><Box component={'span'} mr={'1rem'}>{hobby.emoji}</Box>{hobby.label}</li>
-                ))}
-            </ul>
+            <Box mt={4}>
+                <Grid container spacing={2}>
+                    {info.hobbies.map((hobby, index) => (
+                        <Grid item xs={12} md={6} lg={4} key={index}>
+                            <Box
+                                display="flex"
+                                alignItems="center"
+                                p={2}
+                                border="1px solid #ccc"
+                                borderRadius="8px"
+                            >
+                                <Box component={'span'} mr={2}>
+                                    {hobby.emoji}
+                                </Box>
+                                <Box flex="1">{hobby.label}</Box>
+                            </Box>
+                        </Grid>
+                    ))}
+                </Grid>
+            </Box>
+        </>;
+    }
+
+    function formationText() {
+        return <>
+            {info.formation.map((paragraph, index) => (
+                <div key={index}>
+                    <p>{paragraph.paragraph}</p>
+                    <br />
+                </div>
+            ))}
+        </>;
+    }
+
+    function projectsText() {
+        return <>
+            <div>
+                <ul>
+                    {info.projects.map((project, index) => (
+                        <li key={index} style={{ marginBottom: '1.5rem' }}>
+                            <div>
+                                <strong>{project.title}</strong>
+                                <p style={{ margin: '0.5rem 0' }}>{project.description}</p>
+                                <a
+                                    href={project.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{ color: '#007BFF', textDecoration: 'none' }}
+                                >
+                                    {project.link}
+                                </a>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+
+            </div>
         </>;
     }
 
     return (
         <Box display={'flex'} flexDirection={'column'} alignItems={'center'} mt={'3rem'}>
-            <Terminal text={aboutMeText()}/>
-            <Terminal text={skillsText()}/>
-            <Terminal text={miscText()}/>
+            <Terminal text={aboutMeText()} title={'About me'}/>
+            <Terminal text={formationText()} title={'Formation'}/>
+            <Terminal text={skillsText()} title={'Skills'}/>
+            <Terminal text={projectsText()} title={'Some projects'}/>
+            <Terminal text={miscText()} title={'Hobbies'}/>
         </Box>
     )
 }
