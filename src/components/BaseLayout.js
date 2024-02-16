@@ -18,6 +18,7 @@ export default function BaseLayout() {
    }
 
    useEffect(() => {
+      // eslint-disable-next-line
       let detectedDarkMode = eval(localStorage.getItem('darkMode'));
 
       if (detectedDarkMode) {
