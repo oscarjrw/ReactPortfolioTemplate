@@ -43,7 +43,7 @@ export const info = {
         },
         {
             emoji: "💼",
-            text: "co-promoter of OTHSoft"
+            text: "Freelancer"
         },
         {
             emoji: "📧",
