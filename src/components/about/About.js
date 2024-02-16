@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-import Style from './About.module.scss';
 import Terminal from "./Terminal";
 import {Box} from "@mui/material";
 import {info} from "../../info/Info";
@@ -7,13 +6,12 @@ import {info} from "../../info/Info";
 // @mui material components
 import Container from "@mui/material/Container";
 import Grid from "@mui/material/Grid";
-import Stack from "@mui/material/Stack";
 import {LinearProgress} from "@mui/material";
 import Typography from '@mui/material/Typography';
 
 
 export default function About() {
-    const firstName = info.firstName.toLowerCase()
+    // const firstName = info.firstName.toLowerCase()
 
     const SkillProgressBar = ({skill, percentage}) => {
         const [progress, setProgress] = useState(0);
