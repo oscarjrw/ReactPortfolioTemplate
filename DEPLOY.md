@@ -4,7 +4,7 @@
 
 Constaté de l'extérieur le 25 novembre 2026 : le VPS `2.25.16.4` a déjà nginx 1.28.3 (Ubuntu) sur les ports 80 et 443, avec un certificat Let's Encrypt. Il sert `ivc.oscarwagoussi.tech`.
 
-Le portfolio n'est que des fichiers statiques. On ajoute un site à ce nginx, à côté d'IVC. Un conteneur de plus ajouterait un proxy et de la mémoire sans rien apporter.
+Le portfolio n'est que des fichiers statiques. On ajoute un site à ce nginx, à côté d'IVC. Docker sert seulement à compiler : le VPS récupère le code sur GitHub, le compile dans un conteneur Node jetable, et nginx sert le résultat. Un conteneur de plus ajouterait un proxy et de la mémoire sans rien apporter.
 
 ```text
                      nginx (VPS)
@@ -14,7 +14,7 @@ oscarwagoussi.tech      ->  /var/www/portfolio/current (fichiers)
 
 Remplacer `USER` par ton utilisateur SSH. **[Mac]** et **[VPS]** indiquent où taper chaque commande.
 
-## 1. [Mac] Relire et committer
+## 1. [Mac] Relire, committer, pousser sur GitHub
 
 - [ ] Les deux CV dans `public/cv/` (texte dans `cv/build.js`, puis `npm run cv`).
 - [ ] Les liens GitLab et mémoire dans `src/content/projects.js` (chercher `TODO`).
@@ -22,7 +22,8 @@ Remplacer `USER` par ton utilisateur SSH. **[Mac]** et **[VPS]** indiquent où t
 
 ```bash
 git add -A
-git commit -m "Refonte du portfolio"
+git commit -m "Deploiement depuis GitHub"
+git push -u origin refonte-2026
 ```
 
 Ne pas pousser sur `master` tout de suite : si Netlify suit cette branche, la refonte y partirait aussi.
@@ -54,27 +55,29 @@ Ne pas toucher aux enregistrements MX et TXT. [Mac] Attendre que ceci réponde `
 dig +short @1.1.1.1 oscarwagoussi.tech
 ```
 
-## 4. [VPS] Créer le dossier
+## 4. [VPS] Cloner le projet
+
+Le dépôt GitHub est public, aucun identifiant n'est nécessaire.
 
 ```bash
-sudo apt install -y rsync
-sudo mkdir -p /var/www/portfolio/releases
-sudo chown -R "$USER": /var/www/portfolio
+sudo mkdir -p /opt/portfolio /var/www/portfolio
+sudo chown -R "$(id -un):" /opt/portfolio /var/www/portfolio
+git clone -b refonte-2026 https://github.com/oscarjrw/ReactPortfolioTemplate.git /opt/portfolio
 ```
 
-## 5. [Mac] Envoyer le site
+## 5. [VPS] Compiler et publier
 
 ```bash
-VPS=USER@2.25.16.4 ./deploy/deploy.sh
-scp deploy/nginx.conf USER@2.25.16.4:/tmp/portfolio.conf
+cd /opt/portfolio
+./deploy/deploy.sh
 ```
 
-Le script lance les tests, compile, envoie une version datée, puis bascule dessus.
+La dernière ligne doit être `Published ...`. Si Docker répond « permission denied », ton utilisateur n'est pas dans le groupe `docker` : `sudo usermod -aG docker "$(id -un)"`, puis se reconnecter. Si le build est tué (« Killed »), il manque de la mémoire : vérifier avec `free -h`.
 
 ## 6. [VPS] Activer le site
 
 ```bash
-sudo cp /tmp/portfolio.conf /etc/nginx/sites-available/portfolio
+sudo cp /opt/portfolio/deploy/nginx.conf /etc/nginx/sites-available/portfolio
 sudo ln -s /etc/nginx/sites-available/portfolio /etc/nginx/sites-enabled/portfolio
 sudo nginx -t && sudo systemctl reload nginx
 ```
@@ -114,14 +117,19 @@ Une fois l'étape 8 validée, et pas avant :
 1. Mettre à jour l'adresse du portfolio sur LinkedIn, GitLab et ailleurs.
 2. Rediriger l'ancienne adresse quelques mois : remplacer le contenu de `public/_redirects` par `/*  https://oscarwagoussi.tech/:splat  301!` et publier cela sur Netlify.
 3. Désactiver le déploiement automatique Netlify, puis fusionner `refonte-2026` dans `master` et pousser.
+4. [VPS] Suivre `master` : `cd /opt/portfolio && git fetch && git switch master && ./deploy/deploy.sh`.
 
 ## Ensuite : mettre à jour, revenir en arrière
 
-```bash
-VPS=USER@2.25.16.4 ./deploy/deploy.sh
-```
+[Mac] `git push`, puis [VPS] :
 
 ```bash
-ssh USER@2.25.16.4 'ls /var/www/portfolio/releases'
-ssh USER@2.25.16.4 'ln -sfn /var/www/portfolio/releases/DATE /var/www/portfolio/current'
+cd /opt/portfolio && ./deploy/deploy.sh
+```
+
+Retour arrière :
+
+```bash
+ls /var/www/portfolio/releases
+ln -sfn /var/www/portfolio/releases/VERSION /var/www/portfolio/current
 ```
